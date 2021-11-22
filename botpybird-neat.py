@@ -23,13 +23,14 @@ class Player:
         self.image = self.sprites[0]
         self.tick = 0
         self.animationsTime = 5
-
+        self.color = (random.randint(0, 255), random.randint(
+            0, 255), random.randint(0, 255))
         self.up_pressed = False
         self.down_pressed = False
         self.isFlapUp = False
 
         self.rect = self.image.get_rect()
-        self.rect.topleft = [x, y]
+        self.rect.topleft = (x, y)
 
     def update(self):
         if(self.up_pressed and not self.down_pressed):
@@ -55,6 +56,8 @@ class Player:
 
     def render(self, win):
         win.blit(self.image, self.rect)
+        pygame.draw.rect(win, self.color, (self.rect.x,
+                         self.rect.y, self.rect.width, self.rect.height), 2)
 
     def moveUp(self):
         self.y = self.y - self.vel
@@ -74,14 +77,12 @@ class Obstacle():
         self.x = x
         self.height = random.randrange(0, WIN_HEIGHT-50)
         self.distance = 400
-
         self.top = 0
         self.bottom = 0
         self.OBbot = pygame.transform.scale(random.choice(
             OB_BOTTOM) if self.height > 200 else random.choice(OB_TERRAIN), (150, self.height))
         self.OBtop = pygame.transform.scale(random.choice(OB_TOP), (150, max(
             WIN_HEIGHT - self.OBbot.get_height() - self.GAP, 0)))
-
         # determine if player has passed the obstacle
         self.passed = False
         self.set_height()
@@ -185,7 +186,7 @@ def main(genomes, config):
                 player.moveDown()
         draw_window(win, players, bg_pos, obstacles, score, GEN)
         bg_pos -= OBJ_SPEED
-        if(bg_pos == -WIN_WIDTH):
+        if(bg_pos < -WIN_WIDTH):
             bg_pos = 0
 
         toRemove = []
@@ -209,7 +210,7 @@ def main(genomes, config):
             score += 1
             for g in ge:
                 g.fitness += 5
-            obstacles.append(Obstacle(600))
+            obstacles.append(Obstacle(650))
         for r in toRemove:
             obstacles.remove(r)
 
