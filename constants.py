@@ -1,5 +1,5 @@
 # window height and width
-WIN_WIDTH = 650
+WIN_WIDTH = 700
 WIN_HEIGHT = 600
 
 # define how fast obstacles and background move
@@ -10,3 +10,5 @@ ITEMS_DROP_VEL = 2
 
 PROJECTILE_VEL = 30
 EXPLODING_TIME = 16
+
+OBSTACLE_GAP = 100

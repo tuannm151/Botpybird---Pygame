@@ -1,5 +1,5 @@
 import pygame
-from sprites import IDLE_IMGS, UP_IMGS, SHOOT_IMGS, BOOST_IMGS, DEAD_IMG
+from sprites import IDLE_IMGS, UP_IMGS, SHOOT_IMGS, BOOST_IMGS, DEAD_IMG, CRAZY_IMGS
 from constants import OBJ_SPEED, WIN_WIDTH, WIN_HEIGHT, SCENE_SPEED, PLAYER_VEL
 
 
@@ -26,7 +26,9 @@ class Player:
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
         self.isBoosted = False
+        self.isCrazy = False
         self.isLost = False
+        self.isWin = False
 
     def update(self):
         if(self.isLost):
@@ -34,10 +36,13 @@ class Player:
             return
         if(self.up_pressed and not self.down_pressed):
             self.moveUp()
-        if(not self.up_pressed and not self.isShooting and not self.isBoosted):
+        if(not self.up_pressed and not self.isShooting and not self.isBoosted and not self.isCrazy):
             self.sprites = IDLE_IMGS
         if(not self.up_pressed and self.down_pressed):
             self.moveDown()
+
+        if(self.isCrazy):
+            self.sprites = CRAZY_IMGS
 
         if(self.isBoosted):
             self.sprites = BOOST_IMGS
@@ -91,3 +96,6 @@ class Player:
 
     def set_vel(self, vel):
         self.vel = vel
+
+    def getY(self):
+        return self.y

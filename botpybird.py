@@ -3,6 +3,7 @@ from sprites import BG_IMG, MENU_IMG
 from modules.Player import Player
 from modules.Obstacle import Obstacle
 from modules.Projectile import Projectile
+from modules.Enemy import Enemy
 from modules.Item import Item
 from modules.bgm import *
 import pygame
@@ -14,7 +15,7 @@ pygame.font.init()
 STAT_FONT = pygame.font.Font("8-bit-pusab.ttf", 20)
 
 
-def draw_window(win, player, bg_pos, obstacles, projectiles, items, score, gameover):
+def draw_window(win, player, bg_pos, obstacles, projectiles, items, enemy, score, gameover, gamewin):
     win.fill((0, 0, 0))
     win.blit(BG_IMG, (bg_pos, 0))
     win.blit(BG_IMG, (WIN_WIDTH+bg_pos, 0))
@@ -28,6 +29,9 @@ def draw_window(win, player, bg_pos, obstacles, projectiles, items, score, gameo
         item.move()
         item.render(win)
 
+    enemy.update(player.getY(), player.y)
+    enemy.render(win)
+
     text = STAT_FONT.render("Score: " + str(score), 1, (255, 255, 255))
     win.blit(text, (WIN_WIDTH - 10 - text.get_width(), 10))
 
@@ -37,7 +41,17 @@ def draw_window(win, player, bg_pos, obstacles, projectiles, items, score, gameo
         win.blit(text, text_rect)
 
         text = STAT_FONT.render(
-            "Press space to try again!", True, (255, 255, 255))
+            "Press enter to try again!", True, (255, 255, 255))
+        text_rect = text.get_rect(center=(WIN_WIDTH/2, WIN_HEIGHT/2))
+        win.blit(text, text_rect)
+
+    if(gamewin):
+        text = STAT_FONT.render("You win!", True, (255, 255, 255))
+        text_rect = text.get_rect(center=(WIN_WIDTH/2, WIN_HEIGHT/2-100))
+        win.blit(text, text_rect)
+
+        text = STAT_FONT.render(
+            "Press enter to play again!", True, (255, 255, 255))
         text_rect = text.get_rect(center=(WIN_WIDTH/2, WIN_HEIGHT/2))
         win.blit(text, text_rect)
 
@@ -56,6 +70,7 @@ def main(window):
     score = 0
     projectiles = []
     items = []
+    enemy = Enemy(1000)
     last_spawn = 0
     boost_time = 150
     boost_time_offset = 0
@@ -65,11 +80,11 @@ def main(window):
     while isRun:
         clock.tick(30)
         now = pygame.time.get_ticks()
-        if(now - last_spawn > 7000):
-            if(not player.isBoosted):
+        if(now - last_spawn > 4000):
+            if(not player.isBoosted and not player.isCrazy):
                 items.append(Item(800))
-            last_spawn = now
 
+            last_spawn = now
         if(player.isBoosted):
             if(boost_time_offset < boost_time):
                 if(bg_vel < 25):
@@ -93,7 +108,12 @@ def main(window):
                     obj_vel = prev_vel
                     for obj in obstacles:
                         obj.set_vel(obj_vel)
-
+        if(player.isCrazy):
+            if(boost_time_offset < boost_time+200):
+                boost_time_offset += 1
+            else:
+                boost_time_offset = 0
+                player.isCrazy = False
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 isRun = False
@@ -124,10 +144,13 @@ def main(window):
         add_obstacle = False
         for obstacle in obstacles:
             if(obstacle.collide(player)):
-                if(not player.isBoosted):
+                if(not player.isBoosted and not player.isCrazy):
                     player.isLost = True
             for projectile in projectiles:
                 if(obstacle.collide(projectile) and not obstacle.passed):
+                    if(player.isCrazy):
+                        obstacle.isDestroyed = True
+                        explodeSound.play()
                     toExplodePj.append(projectile)
 
             if(obstacle.x + obstacle.OBtop.get_width() < 0):
@@ -156,8 +179,11 @@ def main(window):
                 continue
             if(item.isItem and item.collide(player)):
                 itemSound.play()
-                player.isBoosted = True
-                rocketSound.play()
+                if(item.isStar):
+                    player.isCrazy = True
+                else:
+                    player.isBoosted = True
+                    rocketSound.play()
                 items.remove(item)
 
         #--------- Projectiles handle ---------#
@@ -169,14 +195,18 @@ def main(window):
 
             for item in items:
                 if(item.collide(projectile)):
-                    explodeSound.play()
+                    # explodeSound.play()
                     item.update()
                     toExplodePj.append(projectile)
+            if(enemy.collide(projectile)):
+                explodeSound.play()
+                enemy.isDamaged = True
+                toExplodePj.append(projectile)
 
         for projectile in toExplodePj:
             projectile.isExploding = True
             if(not projectile.hasExploded):
-                explodeSound.play()
+                # explodeSound.play()
                 projectile.hasExploded = True
             if(projectile.explodingTick > EXPLODING_TIME):
                 toExplodePj.remove(projectile)
@@ -193,8 +223,12 @@ def main(window):
         if(player.isLost):
             lostSound.play()
             isRun = False
+        if(enemy.isDead):
+            player.isWin = True
+            isRun = False
         draw_window(win, player, bg_pos, obstacles,
-                    projectiles, items, score, player.isLost)
+                    projectiles, items, enemy, score, player.isLost, player.isWin)
+        enemy.isDamaged = False
 
 
 def main_menu():
@@ -213,7 +247,7 @@ def main_menu():
                 pygame.quit()
                 quit()
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE and not isPlaying:
+                if event.key == pygame.K_RETURN and not isPlaying:
                     isPlaying = True
                     main(win)
                     isPlaying = False

@@ -1,6 +1,7 @@
 import pygame
 from constants import PROJECTILE_VEL, OBJ_SPEED
 from sprites import PJ_IMGS, EXPLODED_IMGS
+import random
 
 
 class Projectile:
@@ -18,13 +19,22 @@ class Projectile:
         self.explodingTick = 0
         self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect(topleft=(self.x, self.y))
+        self.isEnemy = False
         self.hasExploded = False
+        # self.color = (random.randint(0, 255), random.randint(
+        #     0, 255), random.randint(0, 255))
 
     def move(self):
-        if not self.isExploding:
-            self.x += self.vel
+        if(not self.isEnemy):
+            if not self.isExploding:
+                self.x += self.vel
+            else:
+                self.x -= OBJ_SPEED
         else:
-            self.x -= OBJ_SPEED
+            if not self.isExploding:
+                self.x -= self.vel
+            else:
+                self.x += OBJ_SPEED
         self.rect = self.image.get_rect(topleft=(self.x, self.y))
 
     def update(self):
@@ -40,6 +50,8 @@ class Projectile:
 
     def render(self, win):
         win.blit(self.image, (self.x, self.y))
+        # pygame.draw.rect(win, self.color, (self.rect.x,
+        #                                    self.rect.y, self.rect.width, self.rect.height), 2)
 
     def get_mask(self):
         return self.mask

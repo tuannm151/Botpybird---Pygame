@@ -1,11 +1,11 @@
 import pygame
 import random
 from sprites import OB_BOTTOM, OB_TOP, OB_TERRAIN
-from constants import OBJ_SPEED, WIN_HEIGHT
+from constants import OBJ_SPEED, WIN_HEIGHT, OBSTACLE_GAP
 
 
 class Obstacle():
-    GAP = 80
+    GAP = OBSTACLE_GAP
     VEL = OBJ_SPEED
 
     def __init__(self, x):
@@ -23,6 +23,7 @@ class Obstacle():
         # determine if player has passed the obstacle
         self.passed = False
         self.set_height()
+        self.isDestroyed = False
 
     def set_height(self):
         self.top = -40
@@ -45,10 +46,15 @@ class Obstacle():
 
         top_offset = (self.x - player.x, self.top - round(player.y))
         bottom_offset = (self.x - player.x, self.bottom -
-                         round(player.y) + self.GAP-40)
+                         round(player.y) + self.GAP-50)
 
         b_point = player_mask.overlap(bottom_mask, bottom_offset)
         t_point = player_mask.overlap(top_mask, top_offset)
+        transparent = (0, 0, 0, 0)
+        if(t_point and self.isDestroyed):
+            self.OBtop.fill(transparent)
+        if(b_point and self.isDestroyed):
+            self.OBbot.fill(transparent)
 
         if(t_point or b_point):
             return True
