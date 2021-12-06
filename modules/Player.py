@@ -139,7 +139,7 @@ class Player:
         transition_bar_rect = pygame.Rect(
             health_bar_rect.right, 10, transition_width, 25)
 
-        pygame.draw.rect(win, (255, 0, 0), health_bar_rect)
+        pygame.draw.rect(win, (205, 24, 24), health_bar_rect)
         pygame.draw.rect(win, transition_color, transition_bar_rect)
         pygame.draw.rect(win, (255, 255, 255),
                          (10, 10, self.health_bar_length, 25), 4)

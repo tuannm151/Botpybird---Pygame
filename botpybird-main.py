@@ -156,7 +156,6 @@ def main(window):
                 if(not projectile.isEnemy and obstacle.collide(projectile) and not obstacle.passed):
                     if(player.isCrazy):
                         obstacle.isDestroyed = True
-                        explodeSound.play()
                     toExplodePj.append(projectile)
 
             if(obstacle.x + obstacle.OBtop.get_width() < 0):
@@ -229,6 +228,7 @@ def main(window):
             if(not projectile.hasExploded):
                 if(not projectile.isEnemy):
                     explodeSound.play()
+                    pass
                 projectile.hasExploded = True
             if(projectile.explodingTick > EXPLODING_TIME):
                 toExplodePj.remove(projectile)
