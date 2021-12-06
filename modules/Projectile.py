@@ -1,11 +1,11 @@
 import pygame
 from constants import PROJECTILE_VEL, OBJ_SPEED
-from sprites import PJ_IMGS, EXPLODED_IMGS
+from sprites import PJ_IMGS, EXPLODED_IMGS, PJ_ENEMY
 import random
 
 
 class Projectile:
-    def __init__(self, x, y):
+    def __init__(self, x, y, isEnemy=False):
         self.x = x
         self.y = y
         self.vel = PROJECTILE_VEL
@@ -19,7 +19,7 @@ class Projectile:
         self.explodingTick = 0
         self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect(topleft=(self.x, self.y))
-        self.isEnemy = False
+        self.isEnemy = isEnemy
         self.hasExploded = False
         # self.color = (random.randint(0, 255), random.randint(
         #     0, 255), random.randint(0, 255))
@@ -34,8 +34,7 @@ class Projectile:
             if not self.isExploding:
                 self.x -= self.vel
             else:
-                self.x += OBJ_SPEED
-        self.rect = self.image.get_rect(topleft=(self.x, self.y))
+                self.x -= OBJ_SPEED
 
     def update(self):
         if(self.isExploding):
@@ -47,6 +46,9 @@ class Projectile:
             self.tick = 0
         self.tick += 1
         self.image = self.sprites[self.current_sprite]
+        if(self.isEnemy and not self.isExploding):
+            self.image = PJ_ENEMY
+        self.rect = self.image.get_rect(topleft=(self.x, self.y))
 
     def render(self, win):
         win.blit(self.image, (self.x, self.y))

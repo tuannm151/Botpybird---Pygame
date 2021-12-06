@@ -61,6 +61,7 @@ for picIndex in range(2):
 CRATE_IMG = pygame.image.load(os.path.join('items', 'crate.png'))
 RUNE_IMG = pygame.image.load(os.path.join('items', 'rune.png'))
 STAR_IMG = pygame.image.load(os.path.join('items', 'star.jpg'))
+HEART_IMG = pygame.image.load(os.path.join('items', 'heart.png'))
 #------------------------------------------------#
 
 # ------ projectile animation sprites----------#
@@ -75,6 +76,9 @@ for picIndex in range(6):
     image = pygame.transform.scale2x(pygame.image.load(os.path.join(
         'sprites', 'explode'+str(picIndex+1)+'.png')))
     EXPLODED_IMGS.append(image)
+
+PJ_ENEMY = pygame.transform.scale(
+    pygame.image.load(os.path.join('sprites', 'pjEnemy.png')), (100, 75))
 # ------------------------------------ #
 MENU_IMG = pygame.image.load(os.path.join(
     'sprites', 'mainmenu.png'))
@@ -85,3 +89,4 @@ ENEMYDAMAGED = pygame.transform.scale(pygame.image.load(os.path.join(
     'sprites', 'enemydamaged.png')), (100, 75))
 ENEMYEXPLODE = pygame.transform.scale(pygame.image.load(os.path.join(
     'sprites', 'explode1.png')), (100, 75))
+#--------------------------------------------#

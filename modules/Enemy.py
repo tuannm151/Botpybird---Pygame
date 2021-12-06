@@ -1,5 +1,5 @@
-from constants import ITEMS_DROP_VEL, OBJ_SPEED, WIN_WIDTH, WIN_HEIGHT
-from sprites import CRATE_IMG, RUNE_IMG, STAR_IMG, ENEMY, ENEMYDAMAGED, ENEMYEXPLODE
+from constants import WIN_WIDTH, WIN_HEIGHT, PROJECTILE_DAMAGE, ENEMY_BASE_HEALTH, ENEMY_MAX_HEALTH
+from sprites import ENEMY, ENEMYDAMAGED, ENEMYEXPLODE
 import pygame
 import random
 
@@ -11,11 +11,12 @@ class Enemy:
         self.y = random.randrange(50, 200)
         self.isItem = False
         self.image = ENEMY
-        self.delay = 100
-        self.health = 30
+        self.delay = random.randrange(60, 100)
+        self.health = random.randrange(ENEMY_BASE_HEALTH, ENEMY_MAX_HEALTH)
         self.tickDelay = 0
         self.canShoot = False
         self.isDamaged = False
+        self.isEqual = False
         self.isDead = False
         self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect(topleft=(self.x, self.y))
@@ -25,29 +26,27 @@ class Enemy:
     def update(self, playerY, playerX):
         if(self.isDamaged):
             self.image = ENEMYDAMAGED
-            self.health -= 1
-            if(self.health < 0):
-                self.image = ENEMYEXPLODE
-                self.isDead = True
+        elif(self.isDead):
+            self.image = ENEMYEXPLODE
         else:
             self.image = ENEMY
 
-        if(self.x - playerX > WIN_WIDTH - 250):
+        if(self.x - playerX > WIN_WIDTH - 220):
             self.x -= self.vel
         else:
-            self.x = playerX + 150
-
-        if self.tickDelay < 100 and self.tickDelay % 10 == 0 and abs(self.y - playerY) < 200:
+            self.x = playerX + random.randrange(150, 180)
+        self.isEqual = False
+        if self.tickDelay < 100 and abs(self.y - playerY) < 150:
             moveDirection = bool(random.getrandbits(1))
-            if moveDirection:
-                self.moveDown()
-            else:
-                self.moveUp()
-            self.canShoot = False
-            if(self.tickDelay > 42 and self.tickDelay < 48):
-                self.canShoot = True
+            if(self.tickDelay % 40 == 0):
+                self.isEqual = True
+            if self.tickDelay % 15 == 0:
+                if moveDirection:
+                    self.moveDown()
+                else:
+                    self.moveUp()
 
-            if(self.y < 100 or self.y >= WIN_HEIGHT-100):
+            if(self.y < 100 or self.y >= WIN_HEIGHT-200):
                 self.y = random.randrange(300, WIN_HEIGHT)
 
         self.tickDelay += 1
@@ -56,11 +55,17 @@ class Enemy:
         self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect(topleft=(self.x, self.y))
 
+    def hit(self):
+        self.isDamaged = True
+        self.health -= PROJECTILE_DAMAGE
+        if(self.health < 0):
+            self.isDead = True
+
     def moveUp(self):
-        self.y = self.y - self.vel
+        self.y = self.y - random.randrange(20, self.vel)
 
     def moveDown(self):
-        self.y = self.y + self.vel
+        self.y = self.y + random.randrange(20, self.vel)
 
     def render(self, win):
         win.blit(self.image, (self.x, self.y))

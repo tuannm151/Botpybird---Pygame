@@ -1,4 +1,4 @@
-from constants import OBJ_SPEED, SCENE_SPEED, WIN_WIDTH, WIN_HEIGHT, EXPLODING_TIME
+from constants import OBJ_SPEED, SCENE_SPEED, WIN_WIDTH, WIN_HEIGHT, EXPLODING_TIME, HEART_HEALING_RATE
 from sprites import BG_IMG, MENU_IMG
 from modules.Player import Player
 from modules.Obstacle import Obstacle
@@ -70,9 +70,9 @@ def main(window):
     score = 0
     projectiles = []
     items = []
-    enemy = Enemy(1000)
+    enemy = Enemy(2000)
     last_spawn = 0
-    boost_time = 150
+    boost_time = 200
     boost_time_offset = 0
     obj_vel = OBJ_SPEED
     bg_vel = SCENE_SPEED
@@ -82,7 +82,7 @@ def main(window):
         now = pygame.time.get_ticks()
         if(now - last_spawn > 4000):
             if(not player.isBoosted and not player.isCrazy):
-                items.append(Item(800))
+                items.append(Item(1000))
 
             last_spawn = now
         if(player.isBoosted):
@@ -109,14 +109,20 @@ def main(window):
                     for obj in obstacles:
                         obj.set_vel(obj_vel)
         if(player.isCrazy):
-            if(boost_time_offset < boost_time+200):
+            if(boost_time_offset < boost_time):
                 boost_time_offset += 1
             else:
                 boost_time_offset = 0
                 player.isCrazy = False
+        if(enemy.isEqual):
+            enemyBullet = Projectile(enemy.x - 30, enemy.y, True)
+            projectiles.append(enemyBullet)
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 isRun = False
+                win.blit(pygame.transform.scale(
+                    MENU_IMG, (WIN_WIDTH, WIN_HEIGHT)), (0, 0))
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_DOWN:
                     player.down_pressed = True
@@ -139,7 +145,7 @@ def main(window):
         toRemovePj = []
         toExplodePj = []
 
-        #--------- Obstacles handle ---------#
+        #--------- Obstacles handle ---------999ik7#
         toRemoveOb = []
         add_obstacle = False
         for obstacle in obstacles:
@@ -147,7 +153,7 @@ def main(window):
                 if(not player.isBoosted and not player.isCrazy):
                     player.isLost = True
             for projectile in projectiles:
-                if(obstacle.collide(projectile) and not obstacle.passed):
+                if(not projectile.isEnemy and obstacle.collide(projectile) and not obstacle.passed):
                     if(player.isCrazy):
                         obstacle.isDestroyed = True
                         explodeSound.play()
@@ -158,16 +164,21 @@ def main(window):
 
             if not obstacle.passed and obstacle.x < player.x:
                 obstacle.passed = True
-                add_obstacle = True
+                if(not player.isBoosted):
+                    add_obstacle = True
+                else:
+                    obstacles.append(Obstacle(2*WIN_WIDTH))
 
             for item in items:
                 if(obstacle.collide(item)):
                     items.remove(item)
 
             obstacle.move()
+
         if(add_obstacle):
             score += 1
             obstacles.append(Obstacle(WIN_WIDTH))
+
         for r in toRemoveOb:
             obstacles.remove(r)
 
@@ -181,32 +192,43 @@ def main(window):
                 itemSound.play()
                 if(item.isStar):
                     player.isCrazy = True
-                else:
+                elif(item.isRune):
                     player.isBoosted = True
                     rocketSound.play()
+                elif(item.isHeart):
+                    player.get_health(player.max_health*HEART_HEALING_RATE)
                 items.remove(item)
 
         #--------- Projectiles handle ---------#
         for projectile in projectiles:
-            if(projectile.x > WIN_WIDTH or projectile.x < 0):
-                if not projectile.isExploding:
-                    toRemovePj.append(projectile)
-            projectile.move()
 
             for item in items:
-                if(item.collide(projectile)):
+                if(not projectile.isEnemy and item.collide(projectile)):
                     # explodeSound.play()
                     item.update()
                     toExplodePj.append(projectile)
-            if(enemy.collide(projectile)):
-                explodeSound.play()
+
+            if(not projectile.isEnemy and enemy.collide(projectile)):
+                # explodeSound.play()
                 enemy.isDamaged = True
+                enemy.hit()
                 toExplodePj.append(projectile)
+                score += 5
+
+            if(projectile.isEnemy and player.collide(projectile)):
+                player.hit()
+                toExplodePj.append(projectile)
+
+            if(projectile.x > WIN_WIDTH+50 or projectile.x < -50):
+                toRemovePj.append(projectile)
+
+            projectile.move()
 
         for projectile in toExplodePj:
             projectile.isExploding = True
             if(not projectile.hasExploded):
-                # explodeSound.play()
+                if(not projectile.isEnemy):
+                    explodeSound.play()
                 projectile.hasExploded = True
             if(projectile.explodingTick > EXPLODING_TIME):
                 toExplodePj.remove(projectile)
@@ -215,7 +237,8 @@ def main(window):
                 projectile.explodingTick += 1
 
         for r in toRemovePj:
-            projectiles.remove(r)
+            if(r in projectiles):
+                projectiles.remove(r)
 
         cur_pos = player.y
         if cur_pos <= 0 or cur_pos >= WIN_HEIGHT:
@@ -247,10 +270,11 @@ def main_menu():
                 pygame.quit()
                 quit()
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN and not isPlaying:
+                if event.key == pygame.K_SPACE and not isPlaying:
                     isPlaying = True
                     main(win)
-                    isPlaying = False
+                if isPlaying and event.key == pygame.K_RETURN:
+                    main(win)
         pygame.display.update()
         clock.tick(30)
 

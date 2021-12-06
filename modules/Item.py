@@ -1,5 +1,5 @@
 from constants import ITEMS_DROP_VEL, OBJ_SPEED
-from sprites import CRATE_IMG, RUNE_IMG, STAR_IMG
+from sprites import CRATE_IMG, RUNE_IMG, STAR_IMG, HEART_IMG
 import pygame
 import random
 
@@ -11,7 +11,13 @@ class Item:
         self.y = random.randrange(50, 200)
         self.isItem = False
         self.isColliding = False
-        self.isStar = bool(random.getrandbits(1))
+
+        self.randomItem = [False, False, False]
+        self.randomItem[random.randrange(0, 3)] = True
+        self.isRune = self.randomItem[0]
+        self.isStar = self.randomItem[1]
+        self.isHeart = self.randomItem[2]
+
         self.image = pygame.transform.scale(CRATE_IMG, (70, 70))
         self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect(topleft=(self.x, self.y))
@@ -24,10 +30,12 @@ class Item:
 
     def update(self):
         self.isItem = True
-        if(not self.isStar):
+        if(self.isRune):
             self.image = pygame.transform.scale(RUNE_IMG, (70, 70))
-        else:
+        elif(self.isStar):
             self.image = pygame.transform.scale(STAR_IMG, (70, 70))
+        elif(self.isHeart):
+            self.image = pygame.transform.scale(HEART_IMG, (70, 70))
         self.mask = pygame.mask.from_surface(self.image)
 
     def render(self, win):
