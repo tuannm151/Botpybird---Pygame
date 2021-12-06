@@ -18,17 +18,20 @@ class Player:
         self.animationsTime = 5
         self.flyTime = 200
         self.flyTimeOffset = 0
-        self.up_pressed = False
-        self.down_pressed = False
-        self.isFlapUp = False
-        self.isShooting = False
+
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
+
         self.isBoosted = False
         self.isCrazy = False
         self.isLost = False
         self.isWin = False
         self.isDamaged = False
+        self.up_pressed = False
+        self.down_pressed = False
+        self.isFlapUp = False
+        self.isShooting = False
+
         self.health = PLAYER_HEALTH
         self.target_health = PLAYER_HEALTH
         self.max_health = PLAYER_HEALTH

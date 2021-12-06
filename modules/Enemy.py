@@ -46,7 +46,7 @@ class Enemy:
                 else:
                     self.moveUp()
 
-            if(self.y < 100 or self.y >= WIN_HEIGHT-200):
+            if(self.y < 100 or self.y >= WIN_HEIGHT-300):
                 self.y = random.randrange(300, WIN_HEIGHT)
 
         self.tickDelay += 1
